@@ -182,14 +182,29 @@ test("rate limits rapid mutations from the same IP", async ({ page, isMobile }) 
   test.skip(isMobile, "server-side behavior; one project is enough");
   const input = page.getByRole("textbox", { name: "新しいタスク" });
 
-  // 制限は 60 秒あたり 30 回。31 回目以降は拒否される
-  for (let i = 0; i < 31; i++) {
+  const alert = page.getByRole("alert");
+
+  // 制限は 60 秒ごとの固定の区切りで 30 回まで。テストが区切りをまたぐと 2 区切り分（最大 60 回）
+  // 通ることがあるので、拒否されるまで送り続け、通った回数が 30〜60 回に収まることを確かめる
+  let accepted = 0;
+  for (let i = 0; i < 61; i++) {
     await input.fill(`連打 ${i}`);
     await withAction(page, () => input.press("Enter"));
+    // 成功ならフォームが空にリセットされ、拒否ならエラーが出る。どちらかになるまで待つ
+    // （リセット前に次の入力をすると、空のまま送信しようとして required で止まるため）
+    await page.waitForFunction(
+      () =>
+        document.querySelector("[role=alert]") !== null ||
+        document.querySelector<HTMLInputElement>("#title")?.value === "",
+    );
+    if (await alert.isVisible()) break;
+    accepted++;
   }
 
-  await expect(page.getByRole("alert")).toContainText("操作が多すぎます");
-  await expect(page.getByRole("listitem")).toHaveCount(30);
+  await expect(alert).toContainText("操作が多すぎます");
+  expect(accepted).toBeGreaterThanOrEqual(30);
+  expect(accepted).toBeLessThanOrEqual(60);
+  await expect(page.getByRole("listitem")).toHaveCount(accepted);
 });
 
 test("sends a nonce-based CSP that every script satisfies", async ({ page, isMobile }) => {
