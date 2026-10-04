@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useSyncExternalStore } from "react";
 import { CircleNotchIcon, KeyReturnIcon } from "@phosphor-icons/react";
 import { addTodoAction, type AddTodoState } from "@/app/actions";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Kbd } from "@/components/ui/kbd";
 import { MAX_TITLE_LENGTH } from "@/lib/validation";
 
 const initialState: AddTodoState = { error: null };
+const noopSubscribe = () => () => {};
 
 function isTypingTarget(target: EventTarget | null): boolean {
   return (
@@ -21,6 +22,12 @@ export function AddTodoForm() {
   const [state, formAction, isPending] = useActionState(addTodoAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // サーバーとハイドレーション中は false、ハイドレーション後は true。E2E はこれを待ってから操作する
+  const isHydrated = useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  );
 
   useEffect(() => {
     if (!isPending && state.error === null) formRef.current?.reset();
@@ -38,7 +45,12 @@ export function AddTodoForm() {
   }, []);
 
   return (
-    <form ref={formRef} action={formAction} className="flex flex-col gap-2">
+    <form
+      ref={formRef}
+      action={formAction}
+      data-hydrated={isHydrated ? "true" : undefined}
+      className="flex flex-col gap-2"
+    >
       <div className="flex gap-2">
         <div className="relative flex-1">
           <span

@@ -23,9 +23,13 @@ function row(page: Page, title: string) {
   return page.getByRole("listitem").filter({ hasText: title });
 }
 
-// クリックがハイドレーション前に起きると React のハンドラが動かないため、読み込みが落ち着くまで待つ
+// クリックがハイドレーション前に起きると React のハンドラが動かないため、ハイドレーション完了の印を待つ
 // レート制限は IP 単位なので、テストごとに別の IP を名乗って互いの制限に巻き込まれないようにする。
 // 本番では Cloudflare がこのヘッダーを必ず上書きするため、クライアントが偽装することはできない
+async function waitForHydration(page: Page) {
+  await page.locator("form[data-hydrated]").waitFor();
+}
+
 function randomIp(): string {
   return Array.from({ length: 4 }, () => Math.floor(Math.random() * 254) + 1).join(".");
 }
@@ -33,7 +37,7 @@ function randomIp(): string {
 async function open(page: Page, path = "/") {
   await page.setExtraHTTPHeaders({ "CF-Connecting-IP": randomIp() });
   await page.goto(path);
-  await page.waitForLoadState("networkidle");
+  await waitForHydration(page);
 }
 
 test.beforeEach(async ({ page }) => {
@@ -100,7 +104,8 @@ test("renames a todo with Enter and keeps it after reload", async ({ page }) => 
   await withAction(page, () => editor.press("Enter"));
 
   await expect(row(page, renamed)).toBeVisible();
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload();
+  await waitForHydration(page);
   await expect(row(page, renamed)).toBeVisible();
   await expect(row(page, title)).toHaveCount(0);
 });
@@ -131,7 +136,8 @@ test("deletes a todo and clears completed ones", async ({ page }) => {
   await withAction(page, () => page.getByRole("button", { name: "完了済みを削除" }).click());
   await expect(page.getByText("タスクはありません")).toBeVisible();
 
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload();
+  await waitForHydration(page);
   await expect(page.getByText("タスクはありません")).toBeVisible();
 });
 
@@ -157,7 +163,8 @@ test("cycles the theme and remembers it", async ({ page }) => {
   await toggle.click(); // light → dark
   await expect(html).toHaveClass(/dark/);
 
-  await page.reload({ waitUntil: "networkidle" });
+  await page.reload();
+  await waitForHydration(page);
   await expect(html).toHaveClass(/dark/);
   await expect(page.getByRole("button", { name: /^テーマ: ダーク/ })).toBeVisible();
 });
@@ -195,7 +202,7 @@ test("sends a nonce-based CSP that every script satisfies", async ({ page, isMob
   });
 
   const response = await page.goto("/");
-  await page.waitForLoadState("networkidle");
+  await waitForHydration(page);
 
   const csp = response?.headers()["content-security-policy"] ?? "";
   const nonce = /'nonce-([^']+)'/.exec(csp)?.[1];
