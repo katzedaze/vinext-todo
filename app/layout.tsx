@@ -1,11 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { headers } from "next/headers";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
+// フォントはリポジトリに同梱する（app/fonts/、OFL-1.1）。next/font/google はビルド時の取得に失敗すると
+// 黙って Google Fonts の CDN 読み込みに切り替わり、CSP に止められるため使わない
+const jetbrainsMono = localFont({
+  src: "./fonts/JetBrainsMono-Latin.woff2",
+  weight: "100 800",
+  display: "swap",
+  // 既定の sans-serif ではなく等幅を優先する。日本語など同梱外の文字は BIZ UDGothic などで表示する
+  fallback: ["ui-monospace", "Cascadia Code", "BIZ UDGothic", "monospace"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "Todo | vinext",

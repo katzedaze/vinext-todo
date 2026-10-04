@@ -189,4 +189,5 @@ pnpm run deploy
 
 - vinext は開発途中のプロジェクトで、Next.js のすべての機能を再現しているわけではありません。詳しくは [vinext の README](https://github.com/cloudflare/vinext#project-status) を参照してください。
 - **Server Component から `components/ui/button` などの shadcn/ui コンポーネント（`radix-ui` を読み込むもの）を import すると、vinext 1.0.1 では本番ビルドが RSC の変換中に止まります。** Client Component（`"use client"`）から使う分には問題ありません。`app/not-found.tsx` はこのためボタン風のリンクを Tailwind のクラスで直接作っています。
+- フォント（JetBrains Mono のラテン文字部分）は `app/fonts/` に同梱し、`next/font/local` で読み込んでいます（ライセンスは同じフォルダの `OFL.txt`）。vinext の `next/font/google` は、ビルド時に Google Fonts を取得できないと黙って CDN 読み込みに切り替わり、CSP に止められるためです。
 - `app/` の中にテストファイルを置かないでください。ユニットテストは `lib/` か `tests/` に置きます。

@@ -57,7 +57,7 @@
 
 @theme inline {
   --font-heading: var(--font-mono);
-  --font-mono: var(--font-mono), ui-monospace, "Cascadia Code", "BIZ UDGothic", monospace;
+  --font-mono: var(--font-mono);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
