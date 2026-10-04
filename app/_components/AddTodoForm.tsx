@@ -1,45 +1,76 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { CircleNotchIcon, KeyReturnIcon } from "@phosphor-icons/react";
 import { addTodoAction, type AddTodoState } from "@/app/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Kbd } from "@/components/ui/kbd";
 import { MAX_TITLE_LENGTH } from "@/lib/validation";
 
 const initialState: AddTodoState = { error: null };
 
+function isTypingTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
+  );
+}
+
 export function AddTodoForm() {
   const [state, formAction, isPending] = useActionState(addTodoAction, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!isPending && state.error === null) formRef.current?.reset();
   }, [isPending, state]);
 
+  // "/" で入力欄にフォーカスする（エディタ・GitHub と同じ操作感）
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "/" || isTypingTarget(event.target)) return;
+      event.preventDefault();
+      inputRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   return (
     <form ref={formRef} action={formAction} className="flex flex-col gap-2">
       <div className="flex gap-2">
-        <label htmlFor="title" className="sr-only">
-          新しいタスク
-        </label>
-        <input
-          id="title"
-          name="title"
-          required
-          maxLength={MAX_TITLE_LENGTH}
-          placeholder="やることを入力…"
-          autoComplete="off"
-          className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-base outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-200"
-        />
-        <button
-          type="submit"
-          disabled={isPending}
-          className="rounded-lg bg-orange-600 px-5 py-2.5 font-medium text-white hover:bg-orange-700 disabled:opacity-60"
-        >
-          {isPending ? "追加中…" : "追加"}
-        </button>
+        <div className="relative flex-1">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-primary"
+          >
+            $
+          </span>
+          <label htmlFor="title" className="sr-only">
+            新しいタスク
+          </label>
+          <Input
+            ref={inputRef}
+            id="title"
+            name="title"
+            required
+            maxLength={MAX_TITLE_LENGTH}
+            placeholder="todo add <タスク名>"
+            autoComplete="off"
+            aria-invalid={state.error ? true : undefined}
+            className="h-10 bg-card pr-3 pl-7 text-sm sm:pr-12"
+          />
+          <Kbd className="absolute top-1/2 right-3 hidden -translate-y-1/2 sm:inline-flex">/</Kbd>
+        </div>
+        <Button type="submit" disabled={isPending} className="h-10 px-4">
+          {isPending ? <CircleNotchIcon className="animate-spin" /> : <KeyReturnIcon />}
+          追加
+        </Button>
       </div>
       {state.error && (
-        <p role="alert" className="text-sm text-red-600">
-          {state.error}
+        <p role="alert" className="text-xs text-destructive">
+          error: {state.error}
         </p>
       )}
     </form>

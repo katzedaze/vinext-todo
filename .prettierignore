@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+.cloudflare/
+.vinext/
+dist/
+docs/
+.next/
+coverage/
+playwright-report/
+test-results/

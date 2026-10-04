@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      timezone: Asia/Tokyo
+    open-pull-requests-limit: 10
+    groups:
+      # 互いに足並みをそろえる必要があるものはまとめて更新する
+      react:
+        patterns: ["react", "react-dom", "react-server-dom-webpack", "@types/react", "@types/react-dom"]
+      vinext-cloudflare:
+        patterns: ["vinext", "@vinext/*", "vite", "@vitejs/*", "@cloudflare/*", "cf"]
+      lint-format:
+        patterns: ["eslint", "@eslint/*", "eslint-*", "typescript-eslint", "prettier", "prettier-*"]
+      dev-tools:
+        dependency-type: development
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      timezone: Asia/Tokyo

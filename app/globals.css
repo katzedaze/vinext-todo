@@ -1,17 +1,103 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ライトテーマ（紙に近い白地。アクセントはダークと同じエメラルド系を濃くして使う） */
 :root {
   color-scheme: light;
-  background: #f8fafc;
-  color: #111827;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --background: oklch(0.985 0.002 255);
+  --foreground: oklch(0.2 0.01 255);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.01 255);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.01 255);
+  --primary: oklch(0.52 0.13 162);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.955 0.004 255);
+  --secondary-foreground: oklch(0.2 0.01 255);
+  --muted: oklch(0.955 0.004 255);
+  --muted-foreground: oklch(0.5 0.015 255);
+  --accent: oklch(0.95 0.006 255);
+  --accent-foreground: oklch(0.2 0.01 255);
+  --destructive: oklch(0.55 0.21 25);
+  --success: oklch(0.5 0.13 162);
+  --border: oklch(0.9 0.005 255);
+  --input: oklch(0.88 0.006 255);
+  --ring: oklch(0.52 0.13 162 / 50%);
+  --grid-line: oklch(0 0 0 / 4%);
+  --radius: 0.625rem;
 }
 
-body {
-  margin: 0;
+/* IDE 風のダークテーマ（エメラルドをアクセントに使う） */
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.16 0.008 255);
+  --foreground: oklch(0.93 0.005 255);
+  --card: oklch(0.195 0.01 255);
+  --card-foreground: oklch(0.93 0.005 255);
+  --popover: oklch(0.22 0.01 255);
+  --popover-foreground: oklch(0.93 0.005 255);
+  --primary: oklch(0.79 0.16 160);
+  --primary-foreground: oklch(0.18 0.03 160);
+  --secondary: oklch(0.25 0.012 255);
+  --secondary-foreground: oklch(0.93 0.005 255);
+  --muted: oklch(0.25 0.012 255);
+  --muted-foreground: oklch(0.64 0.015 255);
+  --accent: oklch(0.26 0.014 255);
+  --accent-foreground: oklch(0.93 0.005 255);
+  --destructive: oklch(0.7 0.19 22);
+  --success: oklch(0.79 0.16 160);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 13%);
+  --ring: oklch(0.79 0.16 160 / 60%);
+  --grid-line: oklch(1 0 0 / 3%);
 }
 
-a {
-  color: inherit;
+@theme inline {
+  --font-heading: var(--font-mono);
+  --font-mono: var(--font-mono), ui-monospace, "Cascadia Code", "BIZ UDGothic", monospace;
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-success: var(--success);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-mono;
+  }
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  ::selection {
+    @apply bg-primary/30;
+  }
 }
